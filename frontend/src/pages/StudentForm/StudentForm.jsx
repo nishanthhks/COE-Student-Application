@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "../../components/NavBar/NavBar";
 import { AiOutlinePlus } from "react-icons/ai";
-import axios from "axios";
 
 const FileUpload = ({ id, name, value, onChange }) => {
   const [fileName, setFileName] = useState(value ? value.name : "");
@@ -15,7 +14,7 @@ const FileUpload = ({ id, name, value, onChange }) => {
   };
 
   return (
-    <div className="relative w-64 h-64 border border-gray-300 rounded flex items-center justify-center text-gray-600">
+    <div className="relative  lg:w-64 lg:h-64 md:w-40  md:h-40 sm:w-64 sm:h-64 border border-gray-300 rounded flex items-center justify-center text-gray-600">
       <input
         type="file"
         id={id}
@@ -58,8 +57,8 @@ export default function StudentForm() {
   const [errors, setErrors] = useState({});
 
   const semesterSections = {
-    1: ["A", "B", "C", "D"],
-    2: ["A", "B", "C", "D"],
+    P: ["A", "B", "C", "D"],
+    C: ["A", "B", "C", "D"],
     3: ["A", "B", "C", "D", "E", "F"],
     4: ["A", "B", "C", "D", "E", "F"],
     5: ["A", "B", "C", "D", "E", "F"],
@@ -84,43 +83,61 @@ export default function StudentForm() {
 
   const validateForm = () => {
     const newErrors = {};
+
     if (!formData.usn.startsWith("1BM")) {
       newErrors.usn = 'USN must start with "1BM"';
     }
+
     if (!/^\d+$/.test(formData.aadharNumber)) {
       newErrors.aadharNumber = "Aadhar Number must contain only numbers";
     }
+
     if (formData.tenthMarks && formData.tenthMarks.type !== "application/pdf") {
       newErrors.tenthMarks = "10th Marks Card must be a PDF file";
     }
-    if (formData.twelfthMarks && formData.twelfthMarks.type !== "application/pdf") {
+
+    if (
+      formData.twelfthMarks &&
+      formData.twelfthMarks.type !== "application/pdf"
+    ) {
       newErrors.twelfthMarks = "12th Marks Card must be a PDF file";
     }
+
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!validateForm()) {
       return;
     }
 
     const data = new FormData();
+
     Object.keys(formData).forEach((key) => {
       data.append(key, formData[key]);
     });
 
     try {
-      const response = await axios.post("http://localhost:5000/api/student", data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/student",
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
       console.log(response.data);
+
       // Handle successful form submission logic, e.g., show a success message
     } catch (error) {
       console.error("Error submitting form", error);
+
       // Handle form submission error, e.g., show an error message
     }
   };
@@ -128,10 +145,13 @@ export default function StudentForm() {
   return (
     <>
       <NavBar />
-      <div className="sm:flex-row sm:items-center sm:justify-center p-8 md:px-20 lg:px-32">
+      <div className=" sm:flex-row sm:items-center sm:justify-center p-8 md:px-8 lg:px-12 ">
         <h2 className="text-2xl font-bold mb-4">Student Information Form</h2>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg">
-          <div className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+          {/* left column */}
+          <div className="space-y-4 flex flex-col justify-between">
             <div>
               <label className="block text-gray-700 mb-2" htmlFor="name">
                 Name
@@ -145,7 +165,9 @@ export default function StudentForm() {
                 className="w-full p-2 border border-gray-300 rounded"
                 required
               />
-              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-2" htmlFor="usn">
@@ -160,7 +182,6 @@ export default function StudentForm() {
                 className="w-full p-2 border border-gray-300 rounded"
                 required
               />
-              {errors.usn && <p className="text-red-500 text-sm mt-1">{errors.usn}</p>}
             </div>
             <div>
               <label className="block text-gray-700 mb-2" htmlFor="semester">
@@ -172,13 +193,12 @@ export default function StudentForm() {
                 value={formData.semester}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded"
-                required
-              >
+                required>
                 <option value="">Select Semester</option>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                {["P", "C", 3, 4, 5, 6, 7, 8].map((sem) => (
                   <option key={sem} value={sem}>{`${sem} ${
-                    sem === 1 ? "st" : sem === 2 ? "nd" : "th"
-                  } Semester`}</option>
+                    sem == "P" || sem == "C" ? "cycle" : "th Semester"
+                  } `}</option>
                 ))}
               </select>
             </div>
@@ -192,8 +212,7 @@ export default function StudentForm() {
                 value={formData.section}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded"
-                required
-              >
+                required>
                 <option value="">Select Section</option>
                 {sections.map((section) => (
                   <option key={section} value={section}>
@@ -203,7 +222,9 @@ export default function StudentForm() {
               </select>
             </div>
             <div>
-              <label className="block text-gray-700 mb-2" htmlFor="aadharNumber">
+              <label
+                className="block text-gray-700 mb-2"
+                htmlFor="aadharNumber">
                 Aadhar Number
               </label>
               <input
@@ -216,8 +237,28 @@ export default function StudentForm() {
                 required
               />
               {errors.aadharNumber && (
-                <p className="text-red-500 text-sm mt-1">{errors.aadharNumber}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.aadharNumber}
+                </p>
               )}
+            </div>
+          </div>
+          {/* right column */}
+          <div className="space-y-4  flex-col  ">
+            <div>
+              <label className="block text-gray-700 mb-2" htmlFor="email">
+                Email
+              </label>
+
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded"
+                required
+              />
             </div>
             <div>
               <label className="block text-gray-700 mb-2" htmlFor="address">
@@ -233,46 +274,40 @@ export default function StudentForm() {
                 required
               />
             </div>
-            <div>
-              <label className="block text-gray-700 mb-2" htmlFor="email">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded"
-                required
-              />
+            <div className="flex flex-row xs:flex-col justify-around items-center gap-4">
+              <div>
+                <label
+                  className="block text-gray-700 mb-2"
+                  htmlFor="tenthMarks">
+                  10th Marks Card
+                </label>
+                <FileUpload
+                  id="tenthMarks"
+                  name="tenthMarks"
+                  value={formData.tenthMarks}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label
+                  className="block text-gray-700 mb-2"
+                  htmlFor="twelfthMarks">
+                  12th Marks Card
+                </label>
+                <FileUpload
+                  id="twelfthMarks"
+                  name="twelfthMarks"
+                  value={formData.twelfthMarks}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
           </div>
-          <div className="space-y-4">
-            <FileUpload
-              id="tenthMarks"
-              name="tenthMarks"
-              value={formData.tenthMarks}
-              onChange={handleChange}
-            />
-            {errors.tenthMarks && (
-              <p className="text-red-500 text-sm mt-1">{errors.tenthMarks}</p>
-            )}
-            <FileUpload
-              id="twelfthMarks"
-              name="twelfthMarks"
-              value={formData.twelfthMarks}
-              onChange={handleChange}
-            />
-            {errors.twelfthMarks && (
-              <p className="text-red-500 text-sm mt-1">{errors.twelfthMarks}</p>
-            )}
-          </div>
-          <div className="col-span-1 md:col-span-2 flex justify-center">
+          <div className="col-span-1 md:col-span-2  flex t justify-center ">
             <button
               type="submit"
-              className="bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600 transition duration-200"
-            >
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+              style={{ width: "200px" }}>
               Submit
             </button>
           </div>
