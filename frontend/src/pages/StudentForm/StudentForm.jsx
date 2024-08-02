@@ -212,7 +212,7 @@ export default function StudentForm() {
 
   return (
     <>
-      <NavBar />
+      <NavBar title="Student Form" />
       <div className="sm:flex-row sm:items-center sm:justify-center px-8 py-4 md:px-8 lg:px-20">
         <h2 className="text-2xl font-bold mb-4">Student Information Form</h2>
         <form
