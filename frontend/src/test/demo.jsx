@@ -1,145 +1,130 @@
-// const StudentTable = ({ filteredData }) => {
-//   return filteredData.length > 0 ? (
-//     <div className="overflow-x-auto">
-//       <table className="min-w-full bg-white border border-gray-300">
-//         <thead>
-//           <tr>
-//             <th className="py-2 px-4 border-b">Name</th>
-//             <th className="py-2 px-4 border-b">USN</th>
-//             <th className="py-2 px-4 border-b">Semester</th>
-//             <th className="py-2 px-4 border-b">Section</th>
-//             <th className="py-2 px-4 border-b">Branch</th>
-//             <th className="py-2 px-4 border-b">Aadhar Number</th>
-//             <th className="py-2 px-4 border-b">Address</th>
-//             <th className="py-2 px-4 border-b">Email</th>
-//             <th className="py-2 px-4 border-b">10th Marks</th>
-//             <th className="py-2 px-4 border-b">12th Marks</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {filteredData.map((student, index) => (
-//             <tr
-//               key={index}
-//               className={`${
-//                 index % 2 === 0 ? "bg-gray-100" : "bg-white"
-//               } hover:bg-gray-200`}>
-//               <td className="py-2 px-4 border-b">{student.name}</td>
-//               <td className="py-2 px-4 border-b">{student.usn}</td>
-//               <td className="py-2 px-4 border-b">{student.semester}</td>
-//               <td className="py-2 px-4 border-b">{student.section}</td>
-//               <td className="py-2 px-4 border-b">{student.branch}</td>
-//               <td className="py-2 px-4 border-b">{student.aadharNumber}</td>
-//               <td className="py-2 px-4 border-b">{student.address}</td>
-//               <td className="py-2 px-4 border-b">{student.email}</td>
-//               <td className="py-2 px-4 border-b">
-//                 <a
-//                   href={student.tenthMarks}
-//                   target="_blank"
-//                   rel="noopener noreferrer"
-//                   className="text-blue-500">
-//                   View
-//                 </a>
-//               </td>
-//               <td className="py-2 px-4 border-b">
-//                 <a
-//                   href={student.twelfthMarks}
-//                   target="_blank"
-//                   rel="noopener noreferrer"
-//                   className="text-blue-500">
-//                   View
-//                 </a>
-//               </td>
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-//     </div>
-//   ) : (
-//     <>
-//       <div className="overflow-x-auto">
-//         <table className="min-w-full bg-white border border-gray-300">
-//           <thead>
-//             <tr>
-//               <th className="py-2 px-4 border-b">Name</th>
-//               <th className="py-2 px-4 border-b">USN</th>
-//               <th className="py-2 px-4 border-b">Semester</th>
-//               <th className="py-2 px-4 border-b">Section</th>
-//               <th className="py-2 px-4 border-b">Branch</th>
-//               <th className="py-2 px-4 border-b">Aadhar Number</th>
-//               <th className="py-2 px-4 border-b">Address</th>
-//               <th className="py-2 px-4 border-b">Email</th>
-//               <th className="py-2 px-4 border-b">10th Marks</th>
-//               <th className="py-2 px-4 border-b">12th Marks</th>
-//             </tr>
-//           </thead>
-//         </table>
-//       </div>
-//       <p className="text-gray-500">No students found</p>
-//     </>
-//   );
-// };
+import React, { useState } from 'react';
 
-function StudentTable({ filteredData }) {
+const Demo = () => {
+  const [activeTab, setActiveTab] = useState('student');
+  const [formData, setFormData] = useState({
+    usn: '',
+    email: '',
+    password: ''
+  });
+
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+    setFormData({ usn: '', email: '', password: '' });
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle form submission
+    console.log(formData);
+  };
+
   return (
-    <>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-300">
-          <thead>
-            <tr>
-              <th className="py-2 px-4 border-b">Name</th>
-              <th className="py-2 px-4 border-b">USN</th>
-              <th className="py-2 px-4 border-b">Semester</th>
-              <th className="py-2 px-4 border-b">Section</th>
-              <th className="py-2 px-4 border-b">Branch</th>
-              <th className="py-2 px-4 border-b">Aadhar Number</th>
-              <th className="py-2 px-4 border-b">Address</th>
-              <th className="py-2 px-4 border-b">Email</th>
-              <th className="py-2 px-4 border-b">10th Marks</th>
-              <th className="py-2 px-4 border-b">12th Marks</th>
-            </tr>
-          </thead>
-          {filteredData.length > 0 ? (
-            <tbody>
-              {filteredData.map((student, index) => (
-                <tr
-                  key={index}
-                  className={`${
-                    index % 2 === 0 ? "bg-gray-100" : "bg-white"
-                  } hover:bg-gray-200`}>
-                  <td className="py-2 px-4 border-b">{student.name}</td>
-                  <td className="py-2 px-4 border-b">{student.usn}</td>
-                  <td className="py-2 px-4 border-b">{student.semester}</td>
-                  <td className="py-2 px-4 border-b">{student.section}</td>
-                  <td className="py-2 px-4 border-b">{student.branch}</td>
-                  <td className="py-2 px-4 border-b">{student.aadharNumber}</td>
-                  <td className="py-2 px-4 border-b">{student.address}</td>
-                  <td className="py-2 px-4 border-b">{student.email}</td>
-                  <td className="py-2 px-4 border-b">
-                    <a
-                      href={student.tenthMarks}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500">
-                      View
-                    </a>
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    <a
-                      href={student.twelfthMarks}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500">
-                      View
-                    </a>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          ) : (
-            <p className="text-gray-500">No students found</p>
+    <div className="min-h-screen flex items-center justify-center bg">
+      <div className="w-full max-w-xl mx-auto  border border-gray-300 rounded-lg p-6 ">
+        <div className="flex gap-2 border-b border-gray-200 mb-4 p-3">
+          <button
+            className={`py-1 px-4 ${activeTab === 'student' ? 'text-white bg-blue-500' : 'text-gray-600 bg-white'} rounded-lg focus:outline-none`}
+            onClick={() => handleTabClick('student')}
+          >
+            Student
+          </button>
+          <button
+            className={`py-2 px-4 ${activeTab === 'admission' ? 'text-white bg-green-500' : 'text-gray-600 bg-white'} rounded-lg focus:outline-none`}
+            onClick={() => handleTabClick('admission')}
+          >
+            Admission Incharge
+          </button>
+          <button
+            className={`py-2 px-4 ${activeTab === 'cie' ? 'text-white bg-yellow-500' : 'text-gray-600 bg-white'} rounded-lg focus:outline-none`}
+            onClick={() => handleTabClick('cie')}
+          >
+            CIE Office
+          </button>
+          <button
+            className={`py-2 px-4 ${activeTab === 'principal' ? 'text-white bg-red-500' : 'text-gray-600 bg-white'} rounded-lg focus:outline-none`}
+            onClick={() => handleTabClick('principal')}
+          >
+            Principal
+          </button>
+          <button
+            className={`py-2 px-4 ${activeTab === 'vp' ? 'text-white bg-purple-500' : 'text-gray-600 bg-white'} rounded-lg focus:outline-none`}
+            onClick={() => handleTabClick('vp')}
+          >
+            VPs
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className='border border-gray-300 p-4 rounded'>
+          {activeTab === 'student' && (
+            <div>
+              <div className="mb-4">
+                <label className="block text-gray-700">USN</label>
+                <input
+                  type="text"
+                  name="usn"
+                  value={formData.usn}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded "
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none"
+                  required
+                />
+              </div>
+            </div>
           )}
-        </table>
+          {activeTab !== 'student' && (
+            <div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none"
+                  required
+                />
+              </div>
+            </div>
+          )}
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none"
+          >
+            Login
+          </button>
+        </form>
       </div>
-    </>
+    </div>
   );
-}
+};
+
+export default Demo;
