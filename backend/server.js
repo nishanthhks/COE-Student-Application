@@ -4,6 +4,7 @@ import pkg from 'pg';
 import cors from 'cors';
 
 const { Pool } = pkg;
+
 // Initialize Express
 const app = express();
 app.use(express.json());
@@ -30,6 +31,19 @@ app.post('/submit', upload.fields([{ name: 'tenthMarks' }, { name: 'twelfthMarks
   const twelfthMarks = req.files['twelfthMarks'] ? req.files['twelfthMarks'][0].buffer : null;
 
   try {
+    // Check if the USN or email already exists
+    const checkQuery = `
+      SELECT 1 FROM Student WHERE USN = $1 OR Email = $2
+    `;
+    const checkValues = [usn, email];
+    const result = await pool.query(checkQuery, checkValues);
+
+    if (result.rowCount > 0) {
+      // If a record is found, send a response indicating a duplicate error
+      return res.status(400).json({ error: 'USN or email already exists' });
+    }
+
+    // Insert new record if no duplicates found
     const query = `
       INSERT INTO Student (Name, USN, Aadhar_Number, Semester, Section, Branch, Email, Tenth_Markscard, Twelfth_Markscard, Address)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -48,5 +62,5 @@ app.post('/submit', upload.fields([{ name: 'tenthMarks' }, { name: 'twelfthMarks
 // Start server
 const PORT = 4000;
 app.listen(PORT, () => {
-  console.log("Server running on port ${PORT}");
+  console.log(`Server running on port ${PORT}`);
 });

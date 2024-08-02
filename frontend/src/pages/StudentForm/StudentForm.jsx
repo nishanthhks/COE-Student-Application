@@ -121,18 +121,77 @@ export default function StudentForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) {
-      return; // Prevent form submission if validation fails
+
+    // Validate USN
+    if (!formData.usn.startsWith("1BM")) {
+      alert('USN must start with "1BM"');
+      return;
     }
 
-    // Process form data here, e.g., submit to a server or save locally
+    // Validate Aadhar number
+    if (!/^\d+$/.test(formData.aadharNumber)) {
+      alert("Aadhar Number must contain only numbers");
+      return;
+    }
+
+    // Validate email format
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(formData.email)) {
+      alert("Invalid email format");
+      return;
+    }
+
+    // Validate file uploads
+    if (formData.tenthMarks && formData.tenthMarks.type !== "application/pdf") {
+      alert("10th Marks Card must be a PDF file");
+      return;
+    }
+    if (formData.twelfthMarks && formData.twelfthMarks.type !== "application/pdf") {
+      alert("12th Marks Card must be a PDF file");
+      return;
+    }
+
+    const data = new FormData();
+    data.append("name", formData.name);
+    data.append("usn", formData.usn);
+    data.append("semester", formData.semester);
+    data.append("section", formData.section);
+    data.append("aadharNumber", formData.aadharNumber);
+    data.append("email", formData.email);
+    data.append("address", formData.address);
+    data.append("branch", formData.branch); // Include branch in the form data
+    if (formData.tenthMarks) data.append("tenthMarks", formData.tenthMarks);
+    if (formData.twelfthMarks) data.append("twelfthMarks", formData.twelfthMarks);
+
+    try {
+      await fetch("http://localhost:4000/submit", {
+        method: "POST",
+        body: data,
+      });
+      alert("Data submitted successfully");
+    } catch (error) {
+      console.error("Error submitting data:", error);
+      alert("Error submitting data");
+    }
   };
 
   const branchOptions = {
-    "CS": "Computer Science",
-    "IT": "Information Technology",
-    "EC": "Electronics and Communication",
-    // Add other branches as needed
+    "CSE": "Computer Science and Engineering",
+    "ISE": "Information Science and Engineering",
+    "ECE": "Electronics and Communication Engineering",
+    "AI&DS": "Artificial Intelligence and Data Science",
+    "ME": "Mechanical Engineering",
+    "ASE": "Aerospace Engineering",
+    "EEE": "Electrical and Electronics Engineering",
+    "ETE": "Electronics and Telecommunication Engineering",
+    "EIE": "Electronics and Instrumentation",
+    "CVE": "Civil Engineering",
+    "CSE-IoT": "Computer Science and Engineering - Internet of Things and Cyber Security",
+    "AI&ML": "Artificial Intelligence and Machine Learning",
+    "MD": "Medical Electronics",
+    "IEM": "Industrial Engineering and Management",
+    "CE": "Chemical Engineering",
+    "BT": "Bio Technology",
   };
 
   return (
