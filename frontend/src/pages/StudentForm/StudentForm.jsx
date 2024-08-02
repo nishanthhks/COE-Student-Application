@@ -47,6 +47,7 @@ export default function StudentForm() {
     usn: "",
     semester: "",
     section: "",
+    cycle: "",
     aadharNumber: "",
     email: "",
     address: "",
@@ -59,8 +60,8 @@ export default function StudentForm() {
   const [errors, setErrors] = useState({});
 
   const semesterSections = {
-    1: ["A", "B", "C", "D"],
-    2: ["A", "B", "C", "D"],
+    1: ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"],
+    2: ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"],
     3: ["A", "B", "C", "D", "E", "F"],
     4: ["A", "B", "C", "D", "E", "F"],
     5: ["A", "B", "C", "D", "E", "F"],
@@ -69,28 +70,14 @@ export default function StudentForm() {
     8: ["A", "B", "C", "D", "E", "F"],
   };
 
-  const branchOptions = {
-    "CSE": "Computer Science and Engineering",
-    "ISE": "Information Science and Engineering",
-    "ECE": "Electronics and Communication Engineering",
-    "AI&DS": "Artificial Intelligence and Data Science",
-    "ME": "Mechanical Engineering",
-    "ASE": "Aerospace Engineering",
-    "EEE": "Electrical and Electronics Engineering",
-    "ETE": "Electronics and Telecommunication Engineering",
-    "EIE": "Electronics and Instrumentation",
-    "CVE": "Civil Engineering",
-    "CSE-IoT": "Computer Science and Engineering - Internet of Things and Cyber Security",
-    "AI&ML": "Artificial Intelligence and Machine Learning",
-    "MD": "Medical Electronics",
-    "IEM": "Industrial Engineering and Management",
-    "CE": "Chemical Engineering",
-    "BT": "Bio Technology",
-  };
-
   useEffect(() => {
     if (formData.semester) {
-      setSections(semesterSections[formData.semester] || []);
+      const sectionsOptions = semesterSections[formData.semester];
+      if (sectionsOptions) {
+        setSections(Array.isArray(sectionsOptions) ? sectionsOptions : Object.values(sectionsOptions));
+      } else {
+        setSections([]);
+      }
     }
   }, [formData.semester]);
 
@@ -116,6 +103,10 @@ export default function StudentForm() {
       newErrors.twelfthMarks = "12th Marks Card must be a PDF file";
     }
 
+    if (formData.semester <= 2 && !formData.cycle) {
+      newErrors.cycle = "Cycle must be selected for Semester 1 or 2";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -134,38 +125,23 @@ export default function StudentForm() {
       return; // Prevent form submission if validation fails
     }
 
-    const data = new FormData();
-    data.append("name", formData.name);
-    data.append("usn", formData.usn);
-    data.append("semester", formData.semester);
-    data.append("section", formData.section);
-    data.append("aadharNumber", formData.aadharNumber);
-    data.append("email", formData.email);
-    data.append("address", formData.address);
-    data.append("branch", formData.branch);
-    if (formData.tenthMarks) data.append("tenthMarks", formData.tenthMarks);
-    if (formData.twelfthMarks) data.append("twelfthMarks", formData.twelfthMarks);
+    // Process form data here, e.g., submit to a server or save locally
+  };
 
-    try {
-      await fetch("http://localhost:4000/submit", {
-        method: "POST",
-        body: data,
-      });
-      alert("Data submitted successfully");
-    } catch (error) {
-      console.error("Error submitting data:", error);
-      alert("Error submitting data");
-    }
+  const branchOptions = {
+    "CS": "Computer Science",
+    "IT": "Information Technology",
+    "EC": "Electronics and Communication",
+    // Add other branches as needed
   };
 
   return (
     <>
       <NavBar />
-      <div className="sm:flex-row sm:items-center sm:justify-center p-8 md:px-20 lg:px-32">
-        <h2 className="text-2xl font-bold mb-4">Student Information Form</h2>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded shadow-lg">
-          <div className="md:col-span-2 space-y-4">
-            {/* Form fields for Name, USN, Semester, Section, Aadhar Number, Email, Address, Branch */}
+      <div className="max-w-4xl mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Student Registration</h1>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
             <div>
               <label className="block text-gray-700 mb-2" htmlFor="name">Name</label>
               <input
@@ -180,7 +156,7 @@ export default function StudentForm() {
               {errors.name && <p className="text-red-500">{errors.name}</p>}
             </div>
             <div>
-              <label className="block text-gray-700 mb-2" htmlFor="usn">University Seat Number (USN)</label>
+              <label className="block text-gray-700 mb-2" htmlFor="usn">USN</label>
               <input
                 type="text"
                 id="usn"
@@ -203,14 +179,34 @@ export default function StudentForm() {
                 required
               >
                 <option value="">Select Semester</option>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
-                  <option key={sem} value={sem}>
-                    {sem} {sem === 1 || sem === 2 ? 'st' : sem === 3 || sem === 4 ? 'rd' : 'th'} Semester
-                  </option>
-                ))}
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
               </select>
               {errors.semester && <p className="text-red-500">{errors.semester}</p>}
             </div>
+            {formData.semester <= 2 && (
+              <div>
+                <label className="block text-gray-700 mb-2" htmlFor="cycle">Cycle</label>
+                <select
+                  id="cycle"
+                  name="cycle"
+                  value={formData.cycle}
+                  onChange={handleChange}
+                  className={`w-full p-2 border border-gray-300 rounded ${errors.cycle ? 'border-red-500' : ''}`}
+                >
+                  <option value="">Select Cycle</option>
+                  <option value="P">Physics</option>
+                  <option value="C">Chemistry </option>
+                </select>
+                {errors.cycle && <p className="text-red-500">{errors.cycle}</p>}
+              </div>
+            )}
             <div>
               <label className="block text-gray-700 mb-2" htmlFor="section">Section</label>
               <select
@@ -222,10 +218,8 @@ export default function StudentForm() {
                 required
               >
                 <option value="">Select Section</option>
-                {sections.map((section) => (
-                  <option key={section} value={section}>
-                    {section}
-                  </option>
+                {Array.isArray(sections) && sections.length > 0 && sections.map((section) => (
+                  <option key={section} value={section}>{section}</option>
                 ))}
               </select>
               {errors.section && <p className="text-red-500">{errors.section}</p>}
@@ -258,7 +252,8 @@ export default function StudentForm() {
             </div>
             <div>
               <label className="block text-gray-700 mb-2" htmlFor="address">Address</label>
-              <textarea
+              <input
+                type="text"
                 id="address"
                 name="address"
                 value={formData.address}
@@ -279,18 +274,14 @@ export default function StudentForm() {
                 required
               >
                 <option value="">Select Branch</option>
-                {Object.entries(branchOptions).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {value}
-                  </option>
+                {Object.keys(branchOptions).map((key) => (
+                  <option key={key} value={key}>{branchOptions[key]}</option>
                 ))}
               </select>
               {errors.branch && <p className="text-red-500">{errors.branch}</p>}
             </div>
-          </div>
-          <div className="flex flex-col items-end space-y-4">
-            <div className="w-full">
-              <label className="block text-gray-700 mb-2" htmlFor="tenthMarks">10th Marks Card (PDF)</label>
+            <div>
+              <label className="block text-gray-700 mb-2" htmlFor="tenthMarks">10th Marks Card</label>
               <FileUpload
                 id="tenthMarks"
                 name="tenthMarks"
@@ -299,8 +290,8 @@ export default function StudentForm() {
                 error={errors.tenthMarks}
               />
             </div>
-            <div className="w-full">
-              <label className="block text-gray-700 mb-2" htmlFor="twelfthMarks">12th Marks Card (PDF)</label>
+            <div>
+              <label className="block text-gray-700 mb-2" htmlFor="twelfthMarks">12th Marks Card</label>
               <FileUpload
                 id="twelfthMarks"
                 name="twelfthMarks"
@@ -310,12 +301,14 @@ export default function StudentForm() {
               />
             </div>
           </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700 col-span-3"
-          >
-            Submit
-          </button>
+          <div className="flex items-center justify-center">
+            <button
+              type="submit"
+              className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Submit
+            </button>
+          </div>
         </form>
       </div>
     </>
