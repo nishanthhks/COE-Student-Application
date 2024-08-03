@@ -3,6 +3,7 @@ import NavBar from "../../components/NavBar/NavBar";
 import { AiOutlinePlus } from "react-icons/ai";
 
 const FileUpload = ({ id, name, value, onChange, error }) => {
+
   const [fileName, setFileName] = useState(value ? value.name : "");
   const [filePreview, setFilePreview] = useState(null);
 
@@ -14,7 +15,7 @@ const FileUpload = ({ id, name, value, onChange, error }) => {
   };
 
   return (
-    <div className="relative w-64 h-64 border border-gray-300 rounded flex items-center justify-center text-gray-600">
+    <div className="relative  lg:w-52 lg:h-52 md:w-40  md:h-40 sm:w-64 sm:h-64 border border-gray-300 rounded flex items-center justify-center text-gray-600">
       <input
         type="file"
         id={id}
@@ -41,12 +42,68 @@ const FileUpload = ({ id, name, value, onChange, error }) => {
   );
 };
 
+// TextInput component for handling text inputs
+const TextInput = ({
+  id,
+  name,
+  value,
+  onChange,
+  label,
+  error,
+  type = "text",
+}) => (
+  <div>
+    <label className="block text-gray-700 mb-2" htmlFor={id}>
+      {label}
+    </label>
+    <input
+      type={type}
+      id={id}
+      name={name}
+      value={value}
+      onChange={onChange}
+      className={`w-full p-2 border border-gray-300 rounded ${
+        error ? "border-red-500" : ""
+      }`}
+      required
+    />
+    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+  </div>
+);
+
+// SelectInput component for handling select inputs
+const SelectInput = ({ id, name, value, onChange, label, options, error }) => (
+  <div>
+    <label className="block text-gray-700 mb-2" htmlFor={id}>
+      {label}
+    </label>
+    <select
+      id={id}
+      name={name}
+      value={value}
+      onChange={onChange}
+      className={`w-full p-2 border border-gray-300 rounded ${
+        error ? "border-red-500" : ""
+      }`}
+      required>
+      <option value="">Select {label}</option>
+      {options.map((option) => (
+        <option key={option} value={option}>
+          {option}
+        </option>
+      ))}
+    </select>
+    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+  </div>
+);
+
 export default function StudentForm() {
   const [formData, setFormData] = useState({
     name: "",
     usn: "",
     semester: "",
     section: "",
+    branch: "",
     aadharNumber: "",
     email: "",
     address: "",
@@ -61,6 +118,7 @@ export default function StudentForm() {
   const semesterSections = {
     1: ["A","B","C","D","E","F"],
     2: ["A","B","C","D","E","F"],
+
     3: ["A", "B", "C", "D", "E", "F"],
     4: ["A", "B", "C", "D", "E", "F"],
     5: ["A", "B", "C", "D", "E", "F"],
@@ -68,6 +126,8 @@ export default function StudentForm() {
     7: ["A", "B", "C", "D", "E", "F"],
     8: ["A", "B", "C", "D", "E", "F"],
   };
+
+  const branches = ["cse", "ise", "ai/ml"];
 
   useEffect(() => {
     if (formData.semester) {
@@ -82,6 +142,11 @@ export default function StudentForm() {
 
   const validateForm = () => {
     const newErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+
     if (!formData.usn.startsWith("1BM")) {
       newErrors.usn = 'USN must start with "1BM"';
     }
@@ -93,16 +158,22 @@ export default function StudentForm() {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(formData.email)) {
       newErrors.email = "Invalid email format";
+
     }
 
     if (formData.tenthMarks && formData.tenthMarks.type !== "application/pdf") {
       newErrors.tenthMarks = "10th Marks Card must be a PDF file";
     }
-    if (formData.twelfthMarks && formData.twelfthMarks.type !== "application/pdf") {
+
+    if (
+      formData.twelfthMarks &&
+      formData.twelfthMarks.type !== "application/pdf"
+    ) {
       newErrors.twelfthMarks = "12th Marks Card must be a PDF file";
     }
 
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -116,6 +187,7 @@ export default function StudentForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
 
     // Validate USN
     if (!formData.usn.startsWith("1BM")) {
@@ -143,10 +215,12 @@ export default function StudentForm() {
     }
     if (formData.twelfthMarks && formData.twelfthMarks.type !== "application/pdf") {
       alert("12th Marks Card must be a PDF file");
+
       return;
     }
 
     const data = new FormData();
+
     data.append("name", formData.name);
     data.append("usn", formData.usn);
     data.append("semester", formData.semester);
@@ -167,6 +241,7 @@ export default function StudentForm() {
     } catch (error) {
       console.error("Error submitting data:", error);
       alert("Error submitting data");
+
     }
   };
 
@@ -191,6 +266,7 @@ export default function StudentForm() {
 
   return (
     <>
+
       <NavBar />
       <div className="max-w-4xl mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">Student Registration</h1>
@@ -287,6 +363,7 @@ export default function StudentForm() {
               />
               {errors.email && <p className="text-red-500">{errors.email}</p>}
             </div>
+
             <div>
               <label className="block text-gray-700 mb-2" htmlFor="address">Address</label>
               <input
@@ -300,6 +377,7 @@ export default function StudentForm() {
               />
               {errors.address && <p className="text-red-500">{errors.address}</p>}
             </div>
+
             <div>
               <label className="block text-gray-700 mb-2" htmlFor="branch">Branch</label>
               <select
@@ -343,6 +421,7 @@ export default function StudentForm() {
               type="submit"
               className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
+
               Submit
             </button>
           </div>

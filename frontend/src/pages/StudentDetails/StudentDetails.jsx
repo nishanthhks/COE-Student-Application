@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import NavBar from "../../components/NavBar/NavBar";
 
@@ -20,6 +21,10 @@ const branchOptions = {
   "BT": "Bio Technology",
 };
 
+
+
+// Dropdown component to be reused for semester, section, and branch
+
 const Dropdown = ({ label, name, options, value, onChange }) => (
   <div>
     <label className="block text-gray-700 mb-2 sm:mb-1">{label}</label>
@@ -27,17 +32,20 @@ const Dropdown = ({ label, name, options, value, onChange }) => (
       name={name}
       value={value}
       onChange={onChange}
+
       className="sm:p-1 p-2 border border-gray-300 rounded w-full md:w-auto"
     >
       <option value="">Select {label}</option>
       {Object.keys(options).map((option, index) => (
         <option key={index} value={option}>
           {options[option]}
+
         </option>
       ))}
     </select>
   </div>
 );
+
 
 function StudentTable({ filteredData }) {
   return (
@@ -109,6 +117,7 @@ function StudentTable({ filteredData }) {
   );
 }
 
+
 const StudentDetails = () => {
   const [searchParams, setSearchParams] = useState({
     semester: "",
@@ -117,6 +126,7 @@ const StudentDetails = () => {
     usn: "",
   });
   const [filteredData, setFilteredData] = useState([]);
+
   const [allData, setAllData] = useState([]);
 
   useEffect(() => {
@@ -129,6 +139,9 @@ const StudentDetails = () => {
       .catch((error) => console.error("Error fetching student data:", error));
   }, []);
 
+=======
+
+ 
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
     setSearchParams({
@@ -136,6 +149,7 @@ const StudentDetails = () => {
       [name]: value,
     });
   };
+
 
   const handleSearch = () => {
     const { semester, section, branch, usn } = searchParams;
@@ -150,6 +164,7 @@ const StudentDetails = () => {
       .then((response) => response.json())
       .then((data) => setFilteredData(data))
       .catch((error) => console.error("Error fetching search results:", error));
+
   };
 
   return (
@@ -161,21 +176,27 @@ const StudentDetails = () => {
           <Dropdown
             label="Semester"
             name="semester"
+
             options={{ "1": "Semester 1", "2": "Semester 2", "3": "Semester 3", "4": "Semester 4", "5": "Semester 5", "6": "Semester 6" }}
+
             value={searchParams.semester}
             onChange={handleSearchChange}
           />
           <Dropdown
             label="Section"
             name="section"
+
             options={{ "A": "Section A", "B": "Section B", "C": "Section C", "D": "Section D", "E": "Section E", "F": "Section F" }}
+
             value={searchParams.section}
             onChange={handleSearchChange}
           />
           <Dropdown
             label="Branch"
             name="branch"
+
             options={branchOptions}
+
             value={searchParams.branch}
             onChange={handleSearchChange}
           />
@@ -186,7 +207,9 @@ const StudentDetails = () => {
               name="usn"
               value={searchParams.usn}
               onChange={handleSearchChange}
+
               className="sm:p-1 p-2 border border-gray-300 rounded w-full md:w-auto"
+
             />
           </div>
           <div className="flex items-end">
@@ -194,6 +217,7 @@ const StudentDetails = () => {
               onClick={handleSearch}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
+
               Search
             </button>
           </div>
