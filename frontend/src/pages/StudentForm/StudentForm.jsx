@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "../../components/NavBar/NavBar";
 import { AiOutlinePlus } from "react-icons/ai";
-import axios from "axios"; // Ensure axios is imported
 
-// FileUpload component for handling file uploads
-const FileUpload = ({ id, name, value, onChange }) => {
+const FileUpload = ({ id, name, value, onChange, error }) => {
+
   const [fileName, setFileName] = useState(value ? value.name : "");
   const [filePreview, setFilePreview] = useState(null);
 
@@ -12,7 +11,7 @@ const FileUpload = ({ id, name, value, onChange }) => {
     const file = e.target.files[0];
     setFileName(file ? file.name : "");
     setFilePreview(file ? URL.createObjectURL(file) : null);
-    onChange(e);
+    onChange(e); // Notify parent about file change
   };
 
   return (
@@ -38,6 +37,7 @@ const FileUpload = ({ id, name, value, onChange }) => {
           <p className="text-gray-500 mt-2">Upload PDF</p>
         </div>
       )}
+      {error && <p className="text-red-500 absolute bottom-2">{error}</p>}
     </div>
   );
 };
@@ -105,18 +105,20 @@ export default function StudentForm() {
     section: "",
     branch: "",
     aadharNumber: "",
-    address: "",
     email: "",
+    address: "",
     tenthMarks: null,
     twelfthMarks: null,
+    branch: "",
   });
 
   const [sections, setSections] = useState([]);
   const [errors, setErrors] = useState({});
 
   const semesterSections = {
-    P: ["A", "B", "C", "D"],
-    C: ["A", "B", "C", "D"],
+    1: ["A","B","C","D","E","F"],
+    2: ["A","B","C","D","E","F"],
+
     3: ["A", "B", "C", "D", "E", "F"],
     4: ["A", "B", "C", "D", "E", "F"],
     5: ["A", "B", "C", "D", "E", "F"],
@@ -129,17 +131,14 @@ export default function StudentForm() {
 
   useEffect(() => {
     if (formData.semester) {
-      setSections(semesterSections[formData.semester] || []);
+      const sectionsOptions = semesterSections[formData.semester];
+      if (sectionsOptions) {
+        setSections(Array.isArray(sectionsOptions) ? sectionsOptions : Object.values(sectionsOptions));
+      } else {
+        setSections([]);
+      }
     }
   }, [formData.semester]);
-
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    setFormData({
-      ...formData,
-      [name]: files ? files[0] : value,
-    });
-  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -152,12 +151,14 @@ export default function StudentForm() {
       newErrors.usn = 'USN must start with "1BM"';
     }
 
-    if (!/^\d{12}$/.test(formData.aadharNumber)) {
-      newErrors.aadharNumber = "Aadhar Number must be 12 digits";
+    if (!/^\d+$/.test(formData.aadharNumber)) {
+      newErrors.aadharNumber = "Aadhar Number must contain only numbers";
     }
 
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+
     }
 
     if (formData.tenthMarks && formData.tenthMarks.type !== "application/pdf") {
@@ -176,178 +177,251 @@ export default function StudentForm() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    setFormData({
+      ...formData,
+      [name]: files ? files[0] : value,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+
+    // Validate USN
+    if (!formData.usn.startsWith("1BM")) {
+      alert('USN must start with "1BM"');
+      return;
+    }
+
+    // Validate Aadhar number
+    if (!/^\d+$/.test(formData.aadharNumber)) {
+      alert("Aadhar Number must contain only numbers");
+      return;
+    }
+
+    // Validate email format
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(formData.email)) {
+      alert("Invalid email format");
+      return;
+    }
+
+    // Validate file uploads
+    if (formData.tenthMarks && formData.tenthMarks.type !== "application/pdf") {
+      alert("10th Marks Card must be a PDF file");
+      return;
+    }
+    if (formData.twelfthMarks && formData.twelfthMarks.type !== "application/pdf") {
+      alert("12th Marks Card must be a PDF file");
+
       return;
     }
 
     const data = new FormData();
 
-    Object.keys(formData).forEach((key) => {
-      data.append(key, formData[key]);
-    });
+    data.append("name", formData.name);
+    data.append("usn", formData.usn);
+    data.append("semester", formData.semester);
+    data.append("section", formData.section);
+    data.append("aadharNumber", formData.aadharNumber);
+    data.append("email", formData.email);
+    data.append("address", formData.address);
+    data.append("branch", formData.branch); // Include branch in the form data
+    if (formData.tenthMarks) data.append("tenthMarks", formData.tenthMarks);
+    if (formData.twelfthMarks) data.append("twelfthMarks", formData.twelfthMarks);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/student",
-        data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      console.log(response.data);
-
-      // Handle successful form submission logic, e.g., show a success message
+      await fetch("http://localhost:5000/submit", {
+        method: "POST",
+        body: data,
+      });
+      alert("Data submitted successfully");
     } catch (error) {
-      console.error("Error submitting form", error);
+      console.error("Error submitting data:", error);
+      alert("Error submitting data");
 
-      // Handle form submission error, e.g., show an error message
     }
+  };
+
+  const branchOptions = {
+    "CSE": "Computer Science and Engineering",
+    "ISE": "Information Science and Engineering",
+    "ECE": "Electronics and Communication Engineering",
+    "AI&DS": "Artificial Intelligence and Data Science",
+    "ME": "Mechanical Engineering",
+    "ASE": "Aerospace Engineering",
+    "EEE": "Electrical and Electronics Engineering",
+    "ETE": "Electronics and Telecommunication Engineering",
+    "EIE": "Electronics and Instrumentation",
+    "CVE": "Civil Engineering",
+    "CSE-IoT": "Computer Science and Engineering - Internet of Things and Cyber Security",
+    "AI&ML": "Artificial Intelligence and Machine Learning",
+    "MD": "Medical Electronics",
+    "IEM": "Industrial Engineering and Management",
+    "CE": "Chemical Engineering",
+    "BT": "Bio Technology",
   };
 
   return (
     <>
-      <NavBar title="Student Form" />
-      <div className="sm:flex-row sm:items-center sm:justify-center px-8 py-4 md:px-8 lg:px-20">
-        <h2 className="text-2xl font-bold mb-4">Student Information Form</h2>
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Left Column */}
-          <div className="space-y-4 flex flex-col justify-between">
-            <TextInput
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              label="Name"
-              error={errors.name}
-            />
-            <TextInput
-              id="usn"
-              name="usn"
-              value={formData.usn}
-              onChange={handleChange}
-              label="University Seat Number (USN)"
-              error={errors.usn}
-            />
-            <TextInput
-              id="aadharNumber"
-              name="aadharNumber"
-              value={formData.aadharNumber}
-              onChange={handleChange}
-              label="Aadhar Number"
-              error={errors.aadharNumber}
-            />
-            <TextInput
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              label="Email"
-              error={errors.email}
-            />
+
+      <NavBar />
+      <div className="max-w-4xl mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Student Registration</h1>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
             <div>
-              <label className="block text-gray-700 mb-2" htmlFor="address">
-                Address
-              </label>
-              <textarea
+              <label className="block text-gray-700 mb-2" htmlFor="name">Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className={`w-full p-2 border border-gray-300 rounded ${errors.name ? 'border-red-500' : ''}`}
+                required
+              />
+              {errors.name && <p className="text-red-500">{errors.name}</p>}
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2" htmlFor="usn">USN</label>
+              <input
+                type="text"
+                id="usn"
+                name="usn"
+                value={formData.usn}
+                onChange={handleChange}
+                className={`w-full p-2 border border-gray-300 rounded ${errors.usn ? 'border-red-500' : ''}`}
+                required
+              />
+              {errors.usn && <p className="text-red-500">{errors.usn}</p>}
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2" htmlFor="semester">Semester</label>
+              <select
+                id="semester"
+                name="semester"
+                value={formData.semester}
+                onChange={handleChange}
+                className={`w-full p-2 border border-gray-300 rounded ${errors.semester ? 'border-red-500' : ''}`}
+                required
+              >
+                <option value="">Select Semester</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+              </select>
+              {errors.semester && <p className="text-red-500">{errors.semester}</p>}
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2" htmlFor="section">Section</label>
+              <select
+                id="section"
+                name="section"
+                value={formData.section}
+                onChange={handleChange}
+                className={`w-full p-2 border border-gray-300 rounded ${errors.section ? 'border-red-500' : ''}`}
+                required
+              >
+                <option value="">Select Section</option>
+                {Array.isArray(sections) && sections.length > 0 && sections.map((section) => (
+                  <option key={section} value={section}>{section}</option>
+                ))}
+              </select>
+              {errors.section && <p className="text-red-500">{errors.section}</p>}
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2" htmlFor="aadharNumber">Aadhar Number</label>
+              <input
+                type="text"
+                id="aadharNumber"
+                name="aadharNumber"
+                value={formData.aadharNumber}
+                onChange={handleChange}
+                className={`w-full p-2 border border-gray-300 rounded ${errors.aadharNumber ? 'border-red-500' : ''}`}
+                required
+              />
+              {errors.aadharNumber && <p className="text-red-500">{errors.aadharNumber}</p>}
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2" htmlFor="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`w-full p-2 border border-gray-300 rounded ${errors.email ? 'border-red-500' : ''}`}
+                required
+              />
+              {errors.email && <p className="text-red-500">{errors.email}</p>}
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2" htmlFor="address">Address</label>
+              <input
+                type="text"
                 id="address"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded"
-                rows="4"
+                className={`w-full p-2 border border-gray-300 rounded ${errors.address ? 'border-red-500' : ''}`}
                 required
+              />
+              {errors.address && <p className="text-red-500">{errors.address}</p>}
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2" htmlFor="branch">Branch</label>
+              <select
+                id="branch"
+                name="branch"
+                value={formData.branch}
+                onChange={handleChange}
+                className={`w-full p-2 border border-gray-300 rounded ${errors.branch ? 'border-red-500' : ''}`}
+                required
+              >
+                <option value="">Select Branch</option>
+                {Object.keys(branchOptions).map((key) => (
+                  <option key={key} value={key}>{branchOptions[key]}</option>
+                ))}
+              </select>
+              {errors.branch && <p className="text-red-500">{errors.branch}</p>}
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2" htmlFor="tenthMarks">10th Marks Card</label>
+              <FileUpload
+                id="tenthMarks"
+                name="tenthMarks"
+                value={formData.tenthMarks}
+                onChange={handleChange}
+                error={errors.tenthMarks}
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2" htmlFor="twelfthMarks">12th Marks Card</label>
+              <FileUpload
+                id="twelfthMarks"
+                name="twelfthMarks"
+                value={formData.twelfthMarks}
+                onChange={handleChange}
+                error={errors.twelfthMarks}
               />
             </div>
           </div>
-
-          {/* Right Column */}
-          <div className="space-y-4 flex-col">
-            <SelectInput
-              id="semester"
-              name="semester"
-              value={formData.semester}
-              onChange={handleChange}
-              label="Semester"
-              options={["P", "C", 3, 4, 5, 6, 7, 8].map(
-                (sem) =>
-                  `${sem} ${
-                    sem === "P" || sem === "C" ? "cycle" : "th Semester"
-                  }`
-              )}
-              error={errors.semester}
-            />
-            <SelectInput
-              id="section"
-              name="section"
-              value={formData.section}
-              onChange={handleChange}
-              label="Section"
-              options={sections}
-              error={errors.section}
-            />
-            <SelectInput
-              id="branch"
-              name="branch"
-              value={formData.branch}
-              onChange={handleChange}
-              label="Branch"
-              options={branches}
-              error={errors.branch}
-            />
-            <div className="flex flex-row xs:flex-col justify-around items-center gap-4">
-              <div>
-                <label
-                  className="block text-gray-700 mb-2"
-                  htmlFor="tenthMarks">
-                  10th Marks Card
-                </label>
-                <FileUpload
-                  id="tenthMarks"
-                  name="tenthMarks"
-                  value={formData.tenthMarks}
-                  onChange={handleChange}
-                />
-                {errors.tenthMarks && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.tenthMarks}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label
-                  className="block text-gray-700 mb-2"
-                  htmlFor="twelfthMarks">
-                  12th Marks Card
-                </label>
-                <FileUpload
-                  id="twelfthMarks"
-                  name="twelfthMarks"
-                  value={formData.twelfthMarks}
-                  onChange={handleChange}
-                />
-                {errors.twelfthMarks && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.twelfthMarks}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="col-span-1 md:col-span-2 flex justify-center">
+          <div className="flex items-center justify-center">
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-              style={{ width: "200px" }}>
+              className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+
               Submit
             </button>
           </div>
