@@ -47,7 +47,6 @@ export default function StudentForm() {
     usn: "",
     semester: "",
     section: "",
-    cycle: "",
     aadharNumber: "",
     email: "",
     address: "",
@@ -60,8 +59,8 @@ export default function StudentForm() {
   const [errors, setErrors] = useState({});
 
   const semesterSections = {
-    1: ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"],
-    2: ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"],
+    1: ["A","B","C","D","E","F"],
+    2: ["A","B","C","D","E","F"],
     3: ["A", "B", "C", "D", "E", "F"],
     4: ["A", "B", "C", "D", "E", "F"],
     5: ["A", "B", "C", "D", "E", "F"],
@@ -101,10 +100,6 @@ export default function StudentForm() {
     }
     if (formData.twelfthMarks && formData.twelfthMarks.type !== "application/pdf") {
       newErrors.twelfthMarks = "12th Marks Card must be a PDF file";
-    }
-
-    if (formData.semester <= 2 && !formData.cycle) {
-      newErrors.cycle = "Cycle must be selected for Semester 1 or 2";
     }
 
     setErrors(newErrors);
@@ -164,7 +159,7 @@ export default function StudentForm() {
     if (formData.twelfthMarks) data.append("twelfthMarks", formData.twelfthMarks);
 
     try {
-      await fetch("http://localhost:4000/submit", {
+      await fetch("http://localhost:5000/submit", {
         method: "POST",
         body: data,
       });
@@ -249,23 +244,6 @@ export default function StudentForm() {
               </select>
               {errors.semester && <p className="text-red-500">{errors.semester}</p>}
             </div>
-            {formData.semester <= 2 && (
-              <div>
-                <label className="block text-gray-700 mb-2" htmlFor="cycle">Cycle</label>
-                <select
-                  id="cycle"
-                  name="cycle"
-                  value={formData.cycle}
-                  onChange={handleChange}
-                  className={`w-full p-2 border border-gray-300 rounded ${errors.cycle ? 'border-red-500' : ''}`}
-                >
-                  <option value="">Select Cycle</option>
-                  <option value="P">Physics</option>
-                  <option value="C">Chemistry </option>
-                </select>
-                {errors.cycle && <p className="text-red-500">{errors.cycle}</p>}
-              </div>
-            )}
             <div>
               <label className="block text-gray-700 mb-2" htmlFor="section">Section</label>
               <select
