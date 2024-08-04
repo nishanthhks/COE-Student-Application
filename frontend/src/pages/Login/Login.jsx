@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import NavBar from "../../components/NavBar/NavBar";
 
 const Login = () => {
-  const [activeTab, setActiveTab] = useState("student");
+  const [activeTab, setActiveTab] = useState("Student");
   const [formData, setFormData] = useState({
     usn: "",
     email: "",
@@ -22,129 +22,166 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log(formData);
+
+    // Connect to the backend
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Login successful:", data);
+        // Handle successful login, e.g., redirect or store user data
+      } else {
+        console.error("Login failed:", response.statusText);
+        // Handle failed login
+      }
+    } catch (error) {
+      console.error("Error occurred during login:", error);
+      // Handle network or other errors
+    }
+  };
+
+  const renderInputFields = () => {
+    if (activeTab === "Student") {
+      return (
+        <>
+          <InputField
+            label="USN"
+            type="text"
+            name="usn"
+            value={formData.usn}
+            onChange={handleChange}
+          />
+          <InputField
+            label="Password"
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+          />
+        </>
+      );
+    } else {
+      return (
+        <>
+          <InputField
+            label="Email"
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+          />
+          <InputField
+            label="Password"
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+          />
+        </>
+      );
+    }
   };
 
   return (
     <>
-      <NavBar title={activeTab + " Login"} login={true} />
-      <div className="min-h-screen flex items-center justify-center bg">
-        <div className="w-full max-w-xl mx-auto  border border-gray-300 rounded-lg p-6 ">
-          <div className="flex gap-2 border-b border-gray-200 mb-4 p-3">
-            <button
-              className={`py-1 px-4 ${
-                activeTab === "student"
-                  ? "text-white bg-blue-500"
-                  : "text-gray-600 bg-white"
-              } rounded-lg focus:outline-none`}
-              onClick={() => handleTabClick("student")}>
-              Student
-            </button>
-            <button
-              className={`py-2 px-4 ${
-                activeTab === "admission"
-                  ? "text-white bg-green-500"
-                  : "text-gray-600 bg-white"
-              } rounded-lg focus:outline-none`}
-              onClick={() => handleTabClick("admission")}>
-              Admission Incharge
-            </button>
-            <button
-              className={`py-2 px-4 ${
-                activeTab === "cie"
-                  ? "text-white bg-yellow-500"
-                  : "text-gray-600 bg-white"
-              } rounded-lg focus:outline-none`}
-              onClick={() => handleTabClick("cie")}>
-              CIE Office
-            </button>
-            <button
-              className={`py-2 px-4 ${
-                activeTab === "principal"
-                  ? "text-white bg-red-500"
-                  : "text-gray-600 bg-white"
-              } rounded-lg focus:outline-none`}
-              onClick={() => handleTabClick("principal")}>
-              Principal
-            </button>
-            <button
-              className={`py-2 px-4 ${
-                activeTab === "vp"
-                  ? "text-white bg-purple-500"
-                  : "text-gray-600 bg-white"
-              } rounded-lg focus:outline-none`}
-              onClick={() => handleTabClick("vp")}>
-              VPs
-            </button>
+      <NavBar title={`${activeTab} Login`} login={true} />
+      <div className="min-h-full flex justify-center bg mt-20 px-4">
+        <div className="w-full max-w-xl mx-auto border  border-gray-300 rounded-lg p-4">
+          <h1 className="text-2xl font-bold text-center mb-4">{`${activeTab} Login`}</h1>
+          <div className="flex lg:flex-nowrap md:flex-nowrap sm:flex-wrap flex-wrap gap-1 border-b border-gray-200 mb-4 p-3">
+            <div className="flex w-full justify-between">
+              {["Student", "Admission Incharge"].map((tab) => (
+                <button
+                  key={tab}
+                  className={`flex-1 py-1 px-4 mx-1 ${
+                    activeTab === tab
+                      ? `text-white bg-${getTabColor(tab)}`
+                      : "text-gray-600 bg-white"
+                  } rounded-lg focus:outline-none`}
+                  onClick={() => handleTabClick(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+            <div className="flex w-full justify-between">
+              {["CIE Office", "Principal"].map((tab) => (
+                <button
+                  key={tab}
+                  className={`flex-1 py-1 px-4 mx-1 ${
+                    activeTab === tab
+                      ? `text-white bg-${getTabColor(tab)}`
+                      : "text-gray-600 bg-white"
+                  } rounded-lg focus:outline-none`}
+                  onClick={() => handleTabClick(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
           </div>
           <form
             onSubmit={handleSubmit}
-            className="border border-gray-300 p-4 rounded">
-            {activeTab === "student" && (
-              <div>
-                <div className="mb-4">
-                  <label className="block text-gray-700">USN</label>
-                  <input
-                    type="text"
-                    name="usn"
-                    value={formData.usn}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded "
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-            )}
-            {activeTab !== "student" && (
-              <div>
-                <div className="mb-4">
-                  <label className="block text-gray-700">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none"
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-            )}
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none">
-              Login
-            </button>
+            className="border border-gray-300 p-4 rounded"
+          >
+            {renderInputFields()}
+            <div className="flex flex-col justify-between items-center mt-4">
+              <a
+                href="#"
+                className="text-sm text-blue-500 hover:underline mb-4"
+              >
+                Forgot Password?
+              </a>
+              <button
+                type="submit"
+                className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none"
+              >
+                Login
+              </button>
+            </div>
           </form>
         </div>
       </div>
     </>
   );
+};
+
+const InputField = ({ label, type, name, value, onChange }) => (
+  <div className="mb-4">
+    <label className="block text-gray-700">{label}</label>
+    <input
+      type={type}
+      name={name}
+      value={value}
+      onChange={onChange}
+      className="w-full px-4 py-2 border rounded-lg focus:outline-none"
+      required
+    />
+  </div>
+);
+
+const getTabColor = (tab) => {
+  switch (tab) {
+    case "Student":
+      return "blue-500";
+    case "Admission Incharge":
+      return "green-500";
+    case "CIE Office":
+      return "yellow-500";
+    case "Principal":
+      return "red-500";
+    default:
+      return "gray-500";
+  }
 };
 
 export default Login;

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import viteLogo from "/vite.svg";
+import BmsceLogo from "/BmsceLogo.png"
 
 export default function NavBar({ title, login }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,15 +15,19 @@ export default function NavBar({ title, login }) {
     navigateTo("/student-details");
   };
 
+  const navigateToLogin = () => {
+    navigateTo("/login");
+  };
+
   return (
-    <nav className="bg-white border-b border-gray-200 shadow-md">
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-4">
+    <nav className="bg-white border-b border-gray-300">
+      <div className="max-w-8xl mx-auto py-2 px-4 sm:px-6 lg:px-4">
         <div className="relative flex items-center justify-between h-16">
           {/* Mobile menu button */}
           {login == true ? (
             <div className="flex-1 flex items-center justify-start sm:items-stretch sm:justify-start">
               <div className="flex-shrink-0 flex items-center">
-                <img className="h-8 w-auto" src={viteLogo} alt="Logo" />
+                <img className="h-12 w-auto" src={BmsceLogo} alt="Logo" />
                 <span className="ml-2 text-xl font-semibold">{title}</span>
               </div>
             </div>
@@ -71,7 +75,7 @@ export default function NavBar({ title, login }) {
               {/* Logo and text */}
               <div className="flex-1 flex items-center justify-start sm:items-stretch sm:justify-start">
                 <div className="flex-shrink-0 flex items-center">
-                  <img className="h-8 w-auto" src={viteLogo} alt="Logo" />
+                  <img className="h-12 w-auto" src={BmsceLogo} alt="Logo" />
                   <span className="ml-2 text-xl font-semibold">{title}</span>
                 </div>
               </div>
@@ -88,7 +92,9 @@ export default function NavBar({ title, login }) {
                   onClick={navigateToStudentDetails}>
                   Student Details
                 </button>
-                <button className="bg-blue-500 text-white hover:bg-blue-600 px-4 py-2 rounded">
+                <button
+                  className="bg-blue-500 text-white hover:bg-blue-600 px-4 py-2 rounded"
+                  onClick={navigateToLogin}>
                   Sign In
                 </button>
               </div>
@@ -103,16 +109,18 @@ export default function NavBar({ title, login }) {
         id="mobile-menu">
         <div className="px-2 pt-2 pb-3 space-y-1">
           <button
-            className="text-sky-500 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
+            className=" hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
             onClick={navigateToStudentForm}>
             Add
           </button>
           <button
-            className="text-sky-500 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
+            className=" hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
             onClick={navigateToStudentDetails}>
             Student Details
           </button>
-          <button className="bg-sky-500 text-white hover:bg-blue-600 block px-3 py-2 rounded-md text-base font-medium">
+          <button
+            className="bg-blue-500 text-white hover:bg-blue-600 block px-3 py-2 rounded-md text-base font-medium ml-3"
+            onClick={navigateToLogin}>
             Sign In
           </button>
         </div>

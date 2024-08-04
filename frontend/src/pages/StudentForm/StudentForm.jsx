@@ -1,125 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import NavBar from "../../components/NavBar/NavBar";
-
-// TextInput component
-const TextInput = ({
-  id,
-  name,
-  value,
-  onChange,
-  label,
-  error,
-  type = "text",
-}) => (
-  <div>
-    <label className="block text-gray-700 mb-1" htmlFor={id}>
-      {label}
-    </label>
-    <input
-      type={type}
-      id={id}
-      name={name}
-      value={value}
-      onChange={onChange}
-      className={`w-full p-2 border border-gray-300 rounded ${
-        error ? "border-red-500" : ""
-      }`}
-      required
-    />
-    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-  </div>
-);
-
-// SelectInput component
-const SelectInput = ({ id, name, value, onChange, label, options, error }) => (
-  <div>
-    <label className="block text-gray-700 mb-2" htmlFor={id}>
-      {label}
-    </label>
-    <select
-      id={id}
-      name={name}
-      value={value}
-      onChange={onChange}
-      className={`w-full p-2 border border-gray-300 rounded ${
-        error ? "border-red-500" : ""
-      }`}
-      required>
-      <option value="">Select {label}</option>
-      {options.map(([optionValue, optionLabel]) => (
-        <option key={optionValue} value={optionValue}>
-          {optionLabel}
-        </option>
-      ))}
-    </select>
-    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-  </div>
-);
-
-// FileUpload component
-const FileUpload = ({ id, name, value, onChange, error }) => {
-  const [fileName, setFileName] = useState(value ? value.name : "");
-  const [filePreview, setFilePreview] = useState(null);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setFileName(file ? file.name : "");
-    setFilePreview(file ? URL.createObjectURL(file) : null);
-    onChange(e);
-  };
-
-  return (
-    <div>
-      <div className="relative lg:w-52 lg:h-52 md:w-40 md:h-40 sm:w-64 sm:h-64 border border-gray-300 rounded flex items-center justify-center text-gray-600">
-        <input
-          type="file"
-          id={id}
-          name={name}
-          onChange={handleFileChange}
-          className="absolute inset-0 opacity-0 cursor-pointer"
-          accept=".pdf"
-        />
-        {filePreview ? (
-          <iframe
-            src={filePreview}
-            title={fileName}
-            className="w-full h-full"
-            style={{ border: "none" }}
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center text-center">
-            <AiOutlinePlus className="text-4xl" />
-            <p className="text-gray-500 mt-2">Upload PDF</p>
-          </div>
-        )}
-      </div>
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-    </div>
-  );
-};
-
-// ConfirmationPopup component
-const ConfirmationPopup = ({ onConfirm, onCancel }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div className="bg-white p-6 rounded-lg">
-      <h2 className="text-xl font-bold mb-4">Confirm Submission</h2>
-      <p>Are you sure all the details are correct?</p>
-      <div className="mt-4 flex justify-end">
-        <button
-          onClick={onCancel}
-          className="mr-2 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
-          Cancel
-        </button>
-        <button
-          onClick={onConfirm}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-          Submit
-        </button>
-      </div>
-    </div>
-  </div>
-);
+import { TextInput } from "../../components/StudentFormComponents/TextInput";
+import { SelectInput } from "../../components/StudentFormComponents/SelectInput";
+import { FileUpload } from "../../components/StudentFormComponents/FileUpload";
+import { ConfirmationPopup } from "../../components/StudentFormComponents/ConfirmationPopup";
 
 // StudentForm component
 export default function StudentForm() {
@@ -320,7 +205,7 @@ export default function StudentForm() {
 
   return (
     <>
-      <NavBar title={StudentForm} />
+      <NavBar title={"Student Form"} />
       <div className="sm:flex-row sm:items-center sm:justify-center px-8 py-4 md:px-8 lg:px-32">
         <h2 className="text-2xl font-bold mb-4">Student Information Form</h2>
         <form
