@@ -1,56 +1,162 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import multer from 'multer';
-import pg from 'pg';
-import dotenv from 'dotenv';
+import express from "express";
+import multer from "multer";
+import pkg from "pg";
+import cors from "cors";
 
-dotenv.config();
+const { Pool } = pkg;
 
-const { Pool } = pg;
-
+// Initialize Express
 const app = express();
-const port = process.env.PORT || 5000;
-const upload = multer({ dest: 'uploads/' });
+app.use(express.json());
+app.use(cors()); // Add CORS support
 
+// Initialize PostgreSQL client
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  user: "postgres",
+  host: "localhost",
+  database: "COE",
+  password: "nishanth",
+  port: 5432,
 });
+pool.connect();
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Set up file upload
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
-app.post('/api/student', upload.fields([{ name: 'tenthMarks' }, { name: 'twelfthMarks' }]), async (req, res) => {
-  const { name, usn, semester, section, aadharNumber, address, email } = req.body;
-  const tenthMarks = req.files['tenthMarks'][0];
-  const twelfthMarks = req.files['twelfthMarks'][0];
-
-  try {
-    const result = await pool.query(
-      'INSERT INTO public."Student" (Name, USN, Sem, Section, Aadhaar_No, Address, Email, Tenth_Markscard, Twelth_Markscard) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-      [name, usn, semester, section, aadharNumber, address, email, tenthMarks.path, twelfthMarks.path]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error('Error inserting data:', err);
-    console.log('Data:', {
+// Endpoint to handle form submissions
+app.post(
+  "/submit",
+  upload.fields([{ name: "tenthMarks" }, { name: "twelfthMarks" }]),
+  async (req, res) => {
+    const {
       name,
       usn,
       semester,
       section,
       aadharNumber,
-      address,
       email,
-      tenthMarksPath: tenthMarks.path,
-      twelfthMarksPath: twelfthMarks.path,
-    });
-    res.status(500).json({ error: 'Database error' });
+      address,
+      branch,
+      fatherName,
+      fatherOccupation,
+      fatherPhoneNumber,
+      motherName,
+      motherOccupation,
+      motherPhoneNumber,
+    } = req.body;
+    console.log(req.body);
+
+    const tenthMarks = req.files["tenthMarks"]
+      ? req.files["tenthMarks"][0].buffer
+      : null;
+    const twelfthMarks = req.files["twelfthMarks"]
+      ? req.files["twelfthMarks"][0].buffer
+      : null;
+
+    try {
+      const query = `
+      INSERT INTO Student (Name, USN, Aadhar_Number, Semester, Section, Branch, Email, Tenth_Markscard, Twelfth_Markscard, Address,
+      Fathers_Name, Fathers_Occupation, Fathers_Phone_Number, Mothers_Name, Mothers_Occupation, Mothers_Phone_Number)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+    `;
+      const values = [
+        name,
+        usn,
+        aadharNumber,
+        semester,
+        section,
+        branch,
+        email,
+        tenthMarks,
+        twelfthMarks,
+        address,
+        fatherName,
+        fatherOccupation,
+        fatherPhoneNumber,
+        motherName,
+        motherOccupation,
+        motherPhoneNumber,
+      ];
+      console.log(values);
+
+      await pool.query(query, values);
+
+      res.status(200).json({ message: "Data saved successfully" });
+    } catch (error) {
+      console.error("Error saving data:", error);
+      res.status(500).json({ error: "Error saving data" });
+    }
+  }
+);
+
+// Endpoint to fetch student data based on query parameters
+app.get("/students", async (req, res) => {
+  const { semester, section, branch, usn } = req.query;
+
+  let query = "SELECT * FROM Student WHERE 1=1"; // Base query
+
+  const values = [];
+  let index = 1;
+
+  if (semester) {
+    query += ` AND Semester = $${index++}`;
+    values.push(semester);
+  }
+  if (section) {
+    query += ` AND Section = $${index++}`;
+    values.push(section);
+  }
+  if (branch) {
+    query += ` AND Branch = $${index++}`;
+    values.push(branch);
+  }
+  if (usn) {
+    query += ` AND USN = $${index++}`;
+    values.push(usn);
+  }
+
+  try {
+    const result = await pool.query(query, values);
+    console.log(result.rows);
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({ error: "Error fetching data" });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+// Endpoint to serve PDF files
+app.get("/pdf/:id/:type", async (req, res) => {
+  const { id, type } = req.params;
+
+  const column = type === "tenth" ? "tenth_markscard" : "twelfth_markscard";
+
+  try {
+    const result = await pool.query(
+      `SELECT ${column} FROM Student WHERE id = $1`,
+      [id]
+    );
+    const pdf = result.rows[0][column];
+
+    if (pdf) {
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${type}-marks.pdf`
+      );
+      res.send(Buffer.from(pdf, "binary")); // Ensure correct buffer conversion
+    } else {
+      res.status(404).send("File not found");
+    }
+  } catch (error) {
+    console.error("Error fetching PDF:", error);
+    res.status(500).send("Error fetching PDF");
+  }
+});
+
+// Start server
+const PORT = 4000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

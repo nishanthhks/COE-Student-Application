@@ -1,7 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { AiOutlinePlus } from "react-icons/ai";
 import NavBar from "../../components/NavBar/NavBar";
-import dummyPDF from "/dummy.pdf"; // Import a dummy PDF for display
+
+// Predefined options
+const SEMESTER_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8];
+const SECTION_OPTIONS = ["A", "B", "C", "D", "E", "F"];
+const BRANCH_OPTIONS = [
+  "CSE",
+  "ISE",
+  "ASE",
+  "ME",
+  "MD",
+  "IEM",
+  "EEE",
+  "ECE",
+  "EIE",
+  "ETE",
+  "CE",
+  "CVE",
+  "AI&ML",
+  "AI&DS",
+  "CSE-DS",
+  "BT",
+  "CSE-IoT",
+];
 
 // Dropdown component to be reused for semester, section, and branch
 const Dropdown = ({ label, name, options, value, onChange }) => (
@@ -38,6 +61,12 @@ function StudentTable({ filteredData }) {
               <th className="py-2 px-4 border-b">Aadhar Number</th>
               <th className="py-2 px-4 border-b">Address</th>
               <th className="py-2 px-4 border-b">Email</th>
+              <th className="py-2 px-4 border-b">Father's Name</th>
+              <th className="py-2 px-4 border-b">Father's Occupation</th>
+              <th className="py-2 px-4 border-b">Father's Phone Number</th>
+              <th className="py-2 px-4 border-b">Mother's Name</th>
+              <th className="py-2 px-4 border-b">Mother's Occupation</th>
+              <th className="py-2 px-4 border-b">Mother's Phone Number</th>
               <th className="py-2 px-4 border-b">10th Marks</th>
               <th className="py-2 px-4 border-b">12th Marks</th>
             </tr>
@@ -55,12 +84,28 @@ function StudentTable({ filteredData }) {
                   <td className="py-2 px-4 border-b">{student.semester}</td>
                   <td className="py-2 px-4 border-b">{student.section}</td>
                   <td className="py-2 px-4 border-b">{student.branch}</td>
-                  <td className="py-2 px-4 border-b">{student.aadharNumber}</td>
+                  <td className="py-2 px-4 border-b">
+                    {student.aadhar_number}
+                  </td>
                   <td className="py-2 px-4 border-b">{student.address}</td>
                   <td className="py-2 px-4 border-b">{student.email}</td>
+                  <td className="py-2 px-4 border-b">{student.fathers_name}</td>
+                  <td className="py-2 px-4 border-b">
+                    {student.fathers_occupation}
+                  </td>
+                  <td className="py-2 px-4 border-b">
+                    {student.fathers_phone_number}
+                  </td>
+                  <td className="py-2 px-4 border-b">{student.mothers_name}</td>
+                  <td className="py-2 px-4 border-b">
+                    {student.mothers_occupation}
+                  </td>
+                  <td className="py-2 px-4 border-b">
+                    {student.mothers_phone_number}
+                  </td>
                   <td className="py-2 px-4 border-b">
                     <a
-                      href={student.tenthMarks}
+                      href={`http://localhost:4000/pdf/${student.id}/tenth`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-white bg-red-500 rounded p-1 px-3 hover:bg-red-600 ">
@@ -69,7 +114,7 @@ function StudentTable({ filteredData }) {
                   </td>
                   <td className="py-2 px-4 border-b">
                     <a
-                      href={student.twelfthMarks}
+                      href={`http://localhost:4000/pdf/${student.id}/twelfth`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-white bg-red-500 rounded p-1 px-3 hover:bg-red-600">
@@ -82,7 +127,7 @@ function StudentTable({ filteredData }) {
           ) : (
             <tbody className="w-64 m-auto flex flex-row justify-center">
               <p className="text-gray-500 mx-auto text-center ">
-                No students found
+                <center>No students found</center>
               </p>
             </tbody>
           )}
@@ -102,68 +147,17 @@ const StudentDetails = () => {
   });
   const [filteredData, setFilteredData] = useState([]);
 
-  const dummyData = [
-    {
-      name: "nishanth",
-      usn: "1BM19CS001",
-      semester: "6",
-      section: "A",
-      branch: "CSE",
-      aadharNumber: "123456789012",
-      address: "kanakapura",
-      email: "nishanth@example.com",
-      tenthMarks: dummyPDF,
-      twelfthMarks: dummyPDF,
-    },
-    {
-      name: "navneeth",
-      usn: "1BM19CS002",
-      semester: "6",
-      section: "B",
-      branch: "ECE",
-      aadharNumber: "987654321098",
-      address: "blr",
-      email: "navneeth@example.com",
-      tenthMarks: dummyPDF,
-      twelfthMarks: dummyPDF,
-    },
-    {
-      name: "nithin",
-      usn: "1BM19CS003",
-      semester: "5",
-      section: "A",
-      branch: "ME",
-      aadharNumber: "456123789012",
-      address: "blr",
-      email: "nithin@example.com",
-      tenthMarks: dummyPDF,
-      twelfthMarks: dummyPDF,
-    },
-    {
-      name: "random1",
-      usn: "1BM19CS004",
-      semester: "5",
-      section: "B",
-      branch: "EEE",
-      aadharNumber: "321654987098",
-      address: "kkp",
-      email: "random1@example.com",
-      tenthMarks: dummyPDF,
-      twelfthMarks: dummyPDF,
-    },
-    {
-      name: "random1",
-      usn: "1BM19CS005",
-      semester: "4",
-      section: "A",
-      branch: "CIV",
-      aadharNumber: "789456123012",
-      address: "kkp",
-      email: "random1@example.com",
-      tenthMarks: dummyPDF,
-      twelfthMarks: dummyPDF,
-    },
-  ];
+  // Fetch student data from the server
+  const handleSearch = async () => {
+    try {
+      const res = await axios.get("http://localhost:4000/students", {
+        params: searchParams,
+      });
+      setFilteredData(res.data);
+    } catch (error) {
+      console.error("Error fetching student data:", error);
+    }
+  };
 
   // Handle changes to search parameters
   const handleSearchChange = (e) => {
@@ -174,51 +168,30 @@ const StudentDetails = () => {
     });
   };
 
-  // Filter data based on search parameters
-  const handleSearch = () => {
-    const { semester, section, branch, usn } = searchParams;
-    let filtered = dummyData;
-
-    if (semester) {
-      filtered = filtered.filter((student) => student.semester === semester);
-    }
-    if (section) {
-      filtered = filtered.filter((student) => student.section === section);
-    }
-    if (branch) {
-      filtered = filtered.filter((student) => student.branch === branch);
-    }
-    if (usn) {
-      filtered = filtered.filter((student) => student.usn === usn);
-    }
-
-    setFilteredData(filtered);
-  };
-
   return (
     <>
-      <NavBar title="Student Details" />
+      <NavBar title={StudentDetails} />
       <div className="p-8">
         <h1 className="text-3xl font-bold mb-4">Student Details</h1>
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <Dropdown
             label="Semester"
             name="semester"
-            options={["4", "5", "6"]}
+            options={SEMESTER_OPTIONS}
             value={searchParams.semester}
             onChange={handleSearchChange}
           />
           <Dropdown
             label="Section"
             name="section"
-            options={["A", "B"]}
+            options={SECTION_OPTIONS}
             value={searchParams.section}
             onChange={handleSearchChange}
           />
           <Dropdown
             label="Branch"
             name="branch"
-            options={["CSE", "ECE", "ME", "EEE", "CIV"]}
+            options={BRANCH_OPTIONS}
             value={searchParams.branch}
             onChange={handleSearchChange}
           />
